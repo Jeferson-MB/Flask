@@ -1,20 +1,25 @@
-from flask import Flask
-from flask_cors import CORS
 import os
 from api import create_api
 from config import Config
 from utils.setup import init_database, init_directories
+from db_sqlite import close_connection
+from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
-
+# Configuración de archivo de Base de Datos JSON
 app.config.from_object(Config)
 init_directories()
 init_database()
 # -----------------------------------------------
 
 create_api(app)
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    close_connection(exception)
 
 # Ruta de prueba
 @app.route('/')
