@@ -1,7 +1,7 @@
 .center-row {
     display: flex;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .card {
@@ -30,7 +30,7 @@
     position: fixed;
     top: 75%;
     left: 50%;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -50%);
     display: none; /* Ver: block, No ver: None */
     text-align: center;
     z-index: 1000;
@@ -61,4 +61,70 @@
     flex-grow: 1;
     min-height: 200px;
 }
+/* Fondo degradado y centrado absoluto para el registro */
+.register-bg {
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, #1a237e, #64b5f6);
+}
 
+.register-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.register-card {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    border-radius: 20px;
+    padding-bottom: 10px;
+}
+.profile-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 340px;
+    margin: 40px auto;
+}
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1976D2;
+    margin-bottom: 16px;
+}
+.profile-username {
+    color: #1976D2;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+.profile-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 32px 24px;
+    max-width: 340px;
+    margin: 40px auto;
+}
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1976D2;
+    margin-bottom: 16px;
+}
+.profile-username {
+    color: #1976D2;
+    font-weight: bold;
+    margin-bottom: 0;
+}

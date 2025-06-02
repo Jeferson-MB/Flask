@@ -2,7 +2,7 @@ class LoginForm extends HTMLElement {
     constructor() {
         super();
         this.innerHTML = /*html*/`
-        <div <body style="background: linear-gradient(to bottom,  #1a237e, #64b5f6); heigth: 100vh; margin: 0;">
+        <div <body style="background: linear-gradient(to bottom, #1a237e, #64b5f6); heigth: 100vh; margin: 0;">
             <div class="row center-row">
                 <div class="col s12 m8 l6 offset-m2 offset-l3">
                     <div class="card white z-depth-4">
@@ -16,8 +16,10 @@ class LoginForm extends HTMLElement {
                                 <input type="password" id="password" autocomplete="off">
                                 <label for="password">Contraseña</label>
                             </div>
-                            <button id="btnLogin"
-                                class="btn waves-effect waves-light">Entrar</button>
+                            <button id="btnLogin" class="btn waves-effect waves-light">Entrar</button>
+
+                            <div class="center-align" style="margin-top: 15px;">
+                            <p>¿No tienes cuenta? <a href="register.html" class="blue-text">Regístrate aquí</a></p>
                         </div>
                     </div>
                 </div>
