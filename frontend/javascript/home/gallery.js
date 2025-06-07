@@ -1,137 +1,153 @@
-// importamos modulos externos de javascript
-import { URI } from "../uri.js";
-import { fetchComments, fetchImages } from "./services/api.js";
+import { fetchImages, postComment } from "./services/api.js";
 
-export async function loadGallery(users, onlyMine = false) {
-    const userId = parseInt(localStorage.getItem("user_id"));
-    const container = document.getElementById("gallery");
-    const loader = document.getElementById("loader");
-
-    loader.style.display = 'block';
-    container.innerHTML = '';
-
-    // Manda a traer las imágenes
-    const images = await fetchImages();
-    images.forEach(img => {
-        // Pregunta si el usuario que subió la foto es el mismo que está logueado
-        const isMine = parseInt(img.user_id) === userId;
-
-        // Es para saber si la persona logueada es la misma de las fotos o no
-        if (onlyMine && !isMine) return;
-        if (!onlyMine && isMine) return;
-
-        // Encontramos a la persona que cargó la imagen
-        const uploader = users.find(u => u.id == img.user_id);
-        const uploaderName = uploader ? (uploader.id === userId ? 'Tú' : uploader.username) 
-        : 'Desconocido';
-
-        const commentsHtml = img.comments.map(c => {
-            // Encontramos a la persona que comentó en la base de datos
-            const commenter = users.find(u => u.id === c.user_id);
-
-            // Pregunta si el comentario es de la persona loggueada o no
-            const commenterName = commenter ? (commenter.id === userId ? 'Tú' : commenter.username) 
-            :'Anonimo';
-
-            return `<p><strong>${commenterName}</strong>: ${c.text}</p>`;
-        }).join('');
-
-        // <div class='col s12 m6 l4'></div>
-        const card = document.createElement('div');
-        card.className = 'col s12 m6 l4';
-        card.innerHTML = /*html*/`
-            <div class='card hoverable z-depth-3'>
-                <div class='card-image'>
-                    <img class='materialboxed' src='data:image/jpg;base64,${img.filedata}' />
-                </div>
-                <div class='card-content'>
-                    <div class='like-section'>
-                        <a class='btn-floating halfway-fab waves-effect waves-light blue 
-                            like-btn data-imageid='${img.id}'>
-                            <i class='material-icons'>favorite_border</i>
-                        </a>
-                    <span class='card-title'>Subido por: <a class="profile-link" href="profile.html?user_id=${uploader.id}"><strong>${uploaderName}</strong></a></span>
-                    ${commentsHtml || '<p>Sin comentarios aun</p>'}
-                    
-                    <div class='comment-section row'>
-                        <div class="input-field" style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 30px; padding: 0 10px;">
-                        <input id="comment-${img.id}" type="text" placeholder="Envía un mensaje" style="border: none; box-shadow: none; margin: 0; flex: 1;">    
-
-                        <a data-imageid="${img.id}" class="btn-flat waves-effect waves-grey" style="min-width: auto; padding: 0;">
-                            <i class="material-icons">send</i>
-                        </a>
+export function renderGallery(container, users) {
+    fetchImages().then(images => {
+        container.innerHTML = "";
+        images.forEach(img => {
+            const card = document.createElement('div');
+            card.className = 'col s12 m6 l4';
+            card.innerHTML = `
+                <div class='card hoverable z-depth-3' style="margin-bottom:32px;">
+                    <div class='card-image'>
+                        <img class='materialboxed' src='https://backend-ilaq.onrender.com/static/uploads/${img.filename}' style="margin:auto;max-height:320px;object-fit:contain;" />
+                    </div>
+                    <div class='card-content'>
+                        <span class='card-title' style="font-size:1.1rem;font-weight:700;">
+                          Subido por: <span class="profile-link" data-userid="${img.user_id}" style="color:#1565c0;cursor:pointer;text-decoration:underline;font-weight:bold;">
+                            ${getUploaderName(img.user_id, users)}
+                          </span>
+                        </span>
+                        <div style="margin:8px 0 16px 0;">
+                            ${renderComments(img.comments, users)}
+                        </div>
+                        <div class="input-field" style="margin:0;">
+                            <input id="comment-${img.id}" type="text" placeholder="Envía un mensaje" style="border-radius:25px;padding-left:16px;padding-right:40px;" />
+                            <button data-imageid="${img.id}" class="btn-flat send-comment-btn" style="position:absolute;right:8px;top:4px;min-width:32px;">
+                                <i class="material-icons">send</i>
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-
-    M.Materialbox.init(document.querySelectorAll('.materialboxed'));
-
-    // Evento para agregar comentario
-    container.querySelectorAll('.comment-section a').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const imageId = btn.getAttribute('data-imageid');
-            const input = document.getElementById(`comment-${imageId}`);
-            const text = input.value.trim();
-            if (!text) return;
-            fetchComments(imageId, userId, text).then(console.log);
+            `;
+            container.appendChild(card);
         });
-    });
-
-    container.querySelectorAll('.like-section a').forEach(btn =>{
-        btn.addEventListener('click',()=>{
-            const imageId = btn.getAttribute('data-imageid');
-            const icon = btn.querySelector('i');
-
-            if (icon.textContent == 'favorite_border'){
-                icon.textContent = 'favorite';
-                icon.classList.add('Liked');
-            } else {
-                icon.textContent = 'favorite_border';
-                icon.classList.remove('liked');
-            }
-        })
-    })
-
-
-function renderGallery(images, users) {
-    const container = document.getElementById('gallery-container');
-    container.innerHTML = '';
-
-    images.forEach(image => {
-        // Busca el usuario que subió la imagen por su user_id
-        const uploader = users.find(u => u.id === image.user_id);
-        const uploaderName = uploader ? uploader.username : "Desconocido";
-        const uploaderId = uploader ? uploader.id : null;
-
-        // Construye el bloque HTML de la tarjeta
-        const card = document.createElement('div');
-        card.className = 'card';
-
-        // HTML para el uploader con enlace al perfil si existe
-        const uploaderHTML = uploaderId
-            ? `<a class="profile-link" href="profile.html?user_id=${uploaderId}"><strong>${uploaderName}</strong></a>`
-            : `<strong>${uploaderName}</strong>`;
-
-        card.innerHTML = `
-            <div class="card-image">
-                <img src="data:image/png;base64,${image.filedata}" alt="${image.filename}">
-            </div>
-            <div class="card-content">
-                <span class='card-title'>
-                    Subido por: ${uploaderHTML}
-                </span>
-                <!-- Otros datos de la imagen aquí -->
-            </div>
-            <!-- Aquí puedes agregar más secciones de la tarjeta como comentarios, likes, etc. -->
-        `;
-
-        container.appendChild(card);
+        if (window.M && M.Materialbox) {
+            M.Materialbox.init(document.querySelectorAll('.materialboxed'));
+        }
+        enableCommentSending(container);
+        setupProfileLinkModal();
     });
 }
 
-    loader.style.display = 'none';
+function getUploaderName(userId, users) {
+    const uploader = users.find(u => Number(u.id) === Number(userId));
+    if (!uploader) return "<strong>Desconocido</strong>";
+    return uploader.username;
+}
+
+function renderComments(comments, users) {
+    if (!Array.isArray(comments) || comments.length === 0) {
+        return `<span style="color:#888;">Sin comentarios aún</span>`;
+    }
+    return comments.map(c => {
+        const commenter = users.find(u => Number(u.id) === Number(c.user_id));
+        const commenterName = commenter ? commenter.username : "Anónimo";
+        return `<span style="font-weight:500;color:#222;">${commenterName}:</span> ${c.text}`;
+    }).join('<br>');
+}
+
+export function enableCommentSending(container) {
+    container.querySelectorAll('.send-comment-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const imageId = btn.getAttribute('data-imageid');
+            const input = container.querySelector(`#comment-${imageId}`);
+            const text = input.value.trim();
+            if (!text) return;
+            const userId = Number(localStorage.getItem("user_id"));
+            await postComment(imageId, userId, text);
+            input.value = "";
+            // Recargar comentarios
+            // Puedes llamar a renderGallery(container, users) si lo necesitas
+        });
+    });
+
+    container.querySelectorAll('input[id^="comment-"]').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const imageId = input.id.replace("comment-", "");
+                const userId = Number(localStorage.getItem("user_id"));
+                const text = input.value.trim();
+                if (!text) return;
+                postComment(imageId, userId, text).then(() => {
+                    input.value = "";
+                    // Recargar comentarios si es necesario
+                });
+            }
+        });
+    });
+}
+
+// Modal único para perfil de usuario
+function setupProfileLinkModal() {
+    if (!document.getElementById('profile-modal')) {
+        const modal = document.createElement('div');
+        modal.id = 'profile-modal';
+        modal.style.display = 'none';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.background = 'rgba(0,0,0,0.6)';
+        modal.style.zIndex = '9999';
+        modal.innerHTML = `
+            <div id="profile-modal-content" style="
+                background:#233c6a;
+                color:#fff;
+                border-radius:18px;
+                max-width:360px;
+                margin:60px auto 0 auto;
+                box-shadow:0 4px 20px #0009;
+                padding:34px 28px 32px 28px;
+                text-align:center;
+                position:relative;
+            ">
+                <span id="close-profile-modal" style="
+                    position:absolute;right:18px;top:16px;
+                    color:#bbb;font-size:2rem;cursor:pointer;font-weight:bold;">&times;</span>
+                <img id="modal-profile-pic" src="default-profile.png" style="width:100px;height:100px;object-fit:cover;border-radius:50%;border:3px solid #1565c0;background:#fff;margin-bottom:20px;">
+                <div id="modal-username" style="font-size:1.8rem;color:#fff;margin-bottom:8px;"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('close-profile-modal').onclick = function() {
+            document.getElementById('profile-modal').style.display = 'none';
+        };
+    }
+
+    // Delegación para todos los .profile-link
+    document.querySelectorAll('.profile-link').forEach(link => {
+        link.onclick = function(e) {
+            e.preventDefault();
+            const userId = this.getAttribute('data-userid');
+            fetch(`https://backend-ilaq.onrender.com/api/profile/${userId}`)
+                .then(res => res.ok ? res.json() : null)
+                .then(user => {
+                    if (!user) {
+                        document.getElementById('modal-username').textContent = "Usuario no encontrado";
+                        document.getElementById('modal-profile-pic').src = "default-profile.png";
+                    } else {
+                        document.getElementById('modal-username').textContent = user.username || "Sin nombre";
+                        if (user.photo && user.photo.length > 30) {
+                            document.getElementById('modal-profile-pic').src = `data:image/png;base64,${user.photo}`;
+                        } else {
+                            document.getElementById('modal-profile-pic').src = "default-profile.png";
+                        }
+                    }
+                    document.getElementById('profile-modal').style.display = 'block';
+                });
+        };
+    });
 }

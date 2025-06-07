@@ -194,3 +194,74 @@
     border: 3px solid #1976D2;
     margin-bottom: 10px;
 }
+body {
+  background: #16226e;
+  min-height: 100vh;
+}
+.profile-card {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10);
+  padding: 32px 24px 24px 24px;
+}
+.profile-photo {
+  margin-top: 25px;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 3px solid #1976D2;
+}
+.user-photos img {
+  border-radius: 10px;
+  border: 2px solid #1976d2;
+  background: #f7f7f7;
+}
+.change-photo-container {
+  margin-top: 18px;
+  margin-bottom: 18px;
+}
+@media (max-width: 600px) {
+  .profile-card {
+    padding: 12px 2px 12px 2px;
+    max-width: 98vw;
+  }
+  .profile-photo {
+    width: 90px;
+    height: 90px;
+  }
+}
+.heart.liked {
+  fill: #2196F3 !important;
+  stroke: #2196F3 !important;
+  transition: fill 0.2s;
+}
+.heart {
+  fill: none;
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+.like-btn.liked i {
+  color: red;
+}
+.like-btn i {
+  transition: color 0.2s;
+}
+.like-count {
+  font-weight: bold;
+  margin-left: 4px;
+  color: #1565c0;
+}
+.heart.liked-animate {
+  color: #ff4b6e !important;
+  animation: heartbeat 0.5s;
+  filter: drop-shadow(0 0 8px #ffb4c6);
+}
+@keyframes heartbeat {
+  0% { transform: scale(1);}
+  20% { transform: scale(1.2);}
+  40% { transform: scale(0.95);}
+  60% { transform: scale(1.15);}
+  80% { transform: scale(1);}
+  100% { transform: scale(1);}
+}
